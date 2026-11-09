@@ -1,0 +1,17 @@
+{
+  "cs781_results.docx": "918eb57f2d5e989f6ff0fedc0d63b5a7a0ef62e9e75c93d5fc29560f8bac3643",
+  "Report_LLM.zip": "2f7362ba8e006452398eea4f82e9c42ea8d468de34bde1dc7a4c1c3c676adc23",
+  "notebooks/00b_full_data.ipynb": "da8c0a8be0ea7f21f0ed28c1820df92d179d9b66999796217e4a66426c8e8025",
+  "notebooks/00_data_tokenizer.ipynb": "0c4bbdb89cd49d6abd1c9a93152bfb7355f67382cf63962a571a69c5d0150cb9",
+  "notebooks/01_train.ipynb": "fd2ba0f35303135734712ba6c67f3be724c27fb26cedaba21fea7c10914ae8f0",
+  "notebooks/02_generate_submit.ipynb": "03fe5c9a2a8162a593bfab35093903f089977f7a2b2f08d5c07d64076904c8ba",
+  "notebooks/03_resume.ipynb": "0546d50b52d9c8fdfb45b9aae83b410371883fc105511875c3d6b2750b328037",
+  "notebooks/04_decoding_sweep.ipynb": "a633e4f99ce715d7b97ffa400b75abd2d670755ffb9582908c77b44440b40bf5",
+  "notebooks/10_ner.ipynb": "4e353676aded74f76d83159a7e69fd8f5f32551418ecbe5a6112ab20225396bd",
+  "notebooks/20_rr.ipynb": "330fe8327ae415d029f108b12d3455e009786b32bbdcaab3295814701cd03f97",
+  "notebooks/30_cjpe.ipynb": "45d7f480773eb271f1349674d0633029b8329a6f6cc43962f594cf0465768c58",
+  "notebooks/40_lsi.ipynb": "6695e311480e428462c4600411703001db01d689d46b66f6eeaced08f43b0e66",
+  "notebooks/50_summ.ipynb": "8f7d9ada9122572d919825bffecae61deb249ef7c1c057af4c443e3ab95d2a72",
+  "notebooks/60_pcr.ipynb": "88614fdfe9244ac880b19ed6cfee0024e6e07749a141895629e2ea9ec9a14091",
+  "notebooks/61_pcr_a_tuning.ipynb": "a73ff2b39673227fd3d2c3cfe276add7fb547ac1ad2cc2b731182ac157874101"
+}

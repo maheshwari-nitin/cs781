@@ -1,0 +1,33 @@
+{
+  "phase1_run": "EXTERNAL_PHASE1_RUN_REQUIRED",
+  "phase1_ckpt": "latest",
+  "method": "lora",
+  "method_kwargs": {
+    "r": 8,
+    "lora_alpha": 16
+  },
+  "data_dir": "EXTERNAL_DATA_DIR_REQUIRED",
+  "out_dir": "runs",
+  "run_name": "A_lora__firstlast640_256_reconstructed",
+  "seed": 1337,
+  "val_fraction": 0.05,
+  "split_seed": 1337,
+  "n_val_generate": 32,
+  "source_tokens": 640,
+  "target_tokens": 256,
+  "strategy": "first_last",
+  "normalize_text": true,
+  "grad_accum": 8,
+  "epochs": 1,
+  "lr": 5e-05,
+  "weight_decay": 0.01,
+  "warmup_frac": 0.1,
+  "selection_metric": "bertscore_f1",
+  "bert_model": "roberta-large",
+  "bert_device": "cpu",
+  "max_new_tokens": 256,
+  "min_new_tokens": 16,
+  "temperature": 0.0,
+  "repetition_penalty": 1.0,
+  "no_repeat_ngram_size": 0
+}

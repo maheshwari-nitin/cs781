@@ -1,0 +1,129 @@
+{
+  "total_pages": 24,
+  "main_body_pages": 10,
+  "abstract_words": 114,
+  "main_within_ten_pages": true,
+  "warnings": [],
+  "page_summaries": [
+    {
+      "page": 1,
+      "first_text": "CS781 Capstone Project: In-House Legal Intelligence System Nitin Maheshwari 230711 nitinm23@iitk.ac.in Indian Institute of Technology Kanpur",
+      "characters": 1803
+    },
+    {
+      "page": 2,
+      "first_text": "2 Introduction and Problem Description The project considers a legal language system that can be hosted without sending case material to an ",
+      "characters": 2662
+    },
+    {
+      "page": 3,
+      "first_text": "3.2 Corpus statistics that actually informed design Table 3 gives counts present in executed notebook outputs. There are 100 observed statut",
+      "characters": 2369
+    },
+    {
+      "page": 4,
+      "first_text": "4 Approach and Model Evolution 4.1 Phase-1 foundation model I implemented four foundation families, summarized in Table 4. A follows a moder",
+      "characters": 2378
+    },
+    {
+      "page": 5,
+      "first_text": "4.2 Transfer protocol (Phases 2\u20137) Task models load a saved Phase-1 checkpoint and add a task head where needed. Feature extraction uses an ",
+      "characters": 2899
+    },
+    {
+      "page": 6,
+      "first_text": "4.6 Phase 5 - Legal statute identification LSI reuses the document classifier with one output per observed statute. Independent sigmoids are",
+      "characters": 2658
+    },
+    {
+      "page": 7,
+      "first_text": "5 Experiments and Implementation Details 5.1 Training protocol Only free Kaggle compute was used for training. Under this constraint, I coul",
+      "characters": 2776
+    },
+    {
+      "page": 8,
+      "first_text": "6 Results Table 6: Best finished competition score per architecture family. The A column includes its better recorded variant. Dashes indica",
+      "characters": 2227
+    },
+    {
+      "page": 9,
+      "first_text": "7 Error Analysis and Discussion 7.1 Phase-wise failure modes B is the clearest failed attempt: its NER score is 0.0006 and it trails A on ev",
+      "characters": 2589
+    },
+    {
+      "page": 10,
+      "first_text": "7.2 What the metrics do not measure BERTScore measures similarity in an evaluator\u2019s representation, and ROUGE measures reference overlap. Ne",
+      "characters": 3251
+    },
+    {
+      "page": 11,
+      "first_text": "LLM Usage Declaration Q1. Which Large Language Model(s), if any , did you use while completing the com- petition or writing this report? Giv",
+      "characters": 2538
+    },
+    {
+      "page": 12,
+      "first_text": "References [1] A. Joshi, S. Paul, A. Sharma, P. Goyal, S. Ghosh, and A. Modi, \u201cIL-TUR: Benchmark for indian legal text understanding and rea",
+      "characters": 2746
+    },
+    {
+      "page": 13,
+      "first_text": "[18] bitsandbytes Contributors, \u201c4-bit quantization: Linear4bit,\u201d 2026. Accessed November 2026. [19] scikit-learn Developers, \u201cTfidfVectoriz",
+      "characters": 195
+    },
+    {
+      "page": 14,
+      "first_text": "A Evidence, submission ledger and requirement coverage The evidence used here has three levels. The results document supplies screenshots of",
+      "characters": 2353
+    },
+    {
+      "page": 15,
+      "first_text": "A.1 What the visible record establishes Table 9: Coverage audit. Scored uploads include the four Phase-4 submissions. Counts alone do not es",
+      "characters": 1803
+    },
+    {
+      "page": 16,
+      "first_text": "B.2 Phase 5 local variants Variant Macro-F1 Micro-F1 Subset acc. A full 0.345304 0.492551 0.093311 C partial 0.097599 0.258762 0.036342 D KD",
+      "characters": 1590
+    },
+    {
+      "page": 17,
+      "first_text": "competition scores, 0.8094 for QLoRA and 0.8153 for LoRA, also favor ordinary LoRA in this record. Complete per-run exports would still be n",
+      "characters": 2677
+    },
+    {
+      "page": 18,
+      "first_text": "C.2 Quality checks and evidence gaps The summary loader excludes exactly the two recorded blank-reference IDs, 299 and 4799, leav- ing 7,028",
+      "characters": 3042
+    },
+    {
+      "page": 19,
+      "first_text": "the full 20-layer parameter count. The code freezes tensors without a gradient, while preserving potentially inactive routed experts in othe",
+      "characters": 2987
+    },
+    {
+      "page": 20,
+      "first_text": "For long documents, windows overlap and every token gets an owner. The causal owner maxi- mizes left context; the bidirectional owner favors",
+      "characters": 3278
+    },
+    {
+      "page": 21,
+      "first_text": "These code paths do not imply all required experiments were completed. The retained judg- ment KD did run and produce dev scores, but its su",
+      "characters": 2080
+    },
+    {
+      "page": 22,
+      "first_text": "chunks, so those paths avoid this particular source of padding contamination. B\u2019s poor retrieval result still needs explanations beyond it. ",
+      "characters": 3539
+    },
+    {
+      "page": 23,
+      "first_text": "For later phases, the final saved notebook cell can belong to another model (for example, D\u2019s LSI KD cell). It is not copied blindly as A\u2019s ",
+      "characters": 3044
+    },
+    {
+      "page": 24,
+      "first_text": "hard-negative and longer-context candidates change additional factors. They are not listed among measured results. TF-IDF mining fits only t",
+      "characters": 1994
+    }
+  ]
+}

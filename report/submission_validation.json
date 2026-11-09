@@ -1,0 +1,19 @@
+{
+  "archive": "CS781-CP-Nitin-Maheshwari-230711-report_code.zip",
+  "author": "Nitin Maheshwari",
+  "roll": "230711",
+  "roots": [
+    "code",
+    "report"
+  ],
+  "main_report_pages": 10,
+  "total_pdf_pages": 24,
+  "cpu_regression_tests": 13,
+  "clean_notebooks": 13,
+  "phase_folders": 7,
+  "individual_attempt_docs": 33,
+  "credentials_and_weights_excluded": true,
+  "public_github_url": "https://github.com/maheshwari-nitin/cs781",
+  "github_publication": "repository URL supplied by student",
+  "pdf_sha256": "0ef3d35fc1ea51d03df8f200db0a51e1de426972d9a282a515eff25bcdfd4afe"
+}

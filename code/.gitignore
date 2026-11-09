@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+.env
+hf_token*.txt
+runs/
+data/
+cs781_code.zip

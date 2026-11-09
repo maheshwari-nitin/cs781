@@ -1,0 +1,23 @@
+{
+  "arch": "A_qwen_dense",
+  "run_name": "A_qwen_dense",
+  "data_dir": "EXTERNAL_DATA_DIR_REQUIRED",
+  "out_dir": "runs",
+  "train_bin": "train.bin",
+  "seq_len": 1024,
+  "src_len": 768,
+  "global_batch_seqs": 256,
+  "micro_batch": 0,
+  "mem_frac": 0.9,
+  "train_tokens": 0,
+  "lr": 0.0003,
+  "warmup_frac": 0.02,
+  "decay_frac": 0.2,
+  "min_lr_ratio": 0.1,
+  "weight_decay": 0.1,
+  "compile": true,
+  "eval_every": 200,
+  "ckpt_minutes": 15,
+  "extra": {},
+  "seed": 1337
+}

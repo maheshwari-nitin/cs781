@@ -1,0 +1,32 @@
+{
+  "phase1_run": "EXTERNAL_PHASE1_RUN_REQUIRED",
+  "phase1_ckpt": "best",
+  "method": "full",
+  "method_kwargs": {},
+  "data_dir": "EXTERNAL_DATA_DIR_REQUIRED",
+  "out_dir": "runs",
+  "run_name": "A_rr_reconstructed",
+  "seed": 1337,
+  "domains": [
+    "CL",
+    "IT"
+  ],
+  "context": "document",
+  "pooling": "mean",
+  "window": 1024,
+  "stride": 768,
+  "max_sent_tokens": 256,
+  "batch_size": 8,
+  "grad_accum": 1,
+  "epochs": 10,
+  "lr": 5e-05,
+  "head_lr": 0.001,
+  "weight_decay": 0.01,
+  "warmup_frac": 0.1,
+  "dropout": 0.1,
+  "class_weighting": "none",
+  "extra_train": [],
+  "augment_docs": 0,
+  "oversample_rare": 0,
+  "train_on_dev": false
+}

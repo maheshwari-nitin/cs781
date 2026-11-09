@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-09",
+  "scope": "assembled submission_work/package/code/common source tree",
+  "command": "uv run --python 3.12 --with numpy --with tokenizers --with torch --with scikit-learn --with rouge-score --with sacrebleu python -m unittest discover -s tests -v",
+  "tests_run": 13,
+  "failures": 0,
+  "errors": 0,
+  "passed": true,
+  "unittest_seconds": 92.599,
+  "environment": "Windows; Python 3.12; CPU test execution; dependencies resolved by uv",
+  "notes": "An initial minimal test environment lacked rouge_score. The complete rerun with the declared scoring dependencies passed. This is a code regression check with tiny fixtures, not a reproduction of competition scores or a GPU capacity benchmark."
+}

@@ -1,0 +1,13 @@
+{
+  "status": "reconstructed recipe; not a claimed exact winning-run export",
+  "source_notebooks": [
+    "50_summ.ipynb"
+  ],
+  "observed": "A_lora run and summary budget/holdout metrics are observed. The last saved cell belongs to A_qlora; A_lora epoch/latest-vs-best settings still need its original run export.",
+  "required_external": [
+    "official prepared data",
+    "original Phase-1 tokenizer and weights",
+    "task best checkpoint for inference",
+    "original run config for exact experiment reproduction"
+  ]
+}

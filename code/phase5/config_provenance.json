@@ -1,0 +1,13 @@
+{
+  "status": "reconstructed recipe; not a claimed exact winning-run export",
+  "source_notebooks": [
+    "40_lsi.ipynb"
+  ],
+  "observed": "Run A_full__spread4x512_3 and its scores are observed. The final saved configuration cell belongs to D; A epoch/checkpoint choices require the original run export.",
+  "required_external": [
+    "official prepared data",
+    "original Phase-1 tokenizer and weights",
+    "task best checkpoint for inference",
+    "original run config for exact experiment reproduction"
+  ]
+}

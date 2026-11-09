@@ -1,0 +1,60 @@
+\subsection{Phase 4 local variants}
+\begin{table}[H]\centering\small
+\begin{tabular}{lrr}
+\toprule Variant & Dev macro-F1 & Trainable (\%)\\\midrule
+A full & 0.814897 & 100.0000\\
+B KD & 0.640701 & 51.1502\\
+B lorma & 0.598750 & 0.5133\\
+A lorma & 0.562054 & 1.1428\\
+\bottomrule\end{tabular}
+\end{table}
+Source: saved comparison output in \code{notebooks/30_cjpe.ipynb}. The exact run identifiers are:
+\par\noindent\small\code{A_qwen_dense_full__full__last4x512}\normalsize
+\par\noindent\small\code{B_encdec__kd_from_A__last4x512}\normalsize
+\par\noindent\small\code{B_encdec__lorma__last4x512}\normalsize
+\par\noindent\small\code{A_qwen_dense_full__lorma__last4x512}\normalsize
+\subsection{Phase 5 local variants}
+\begin{table}[H]\centering\small
+\begin{tabular}{lrrr}
+\toprule Variant & Macro-F1 & Micro-F1 & Subset acc.\\\midrule
+A full & 0.345304 & 0.492551 & 0.093311\\
+C partial & 0.097599 & 0.258762 & 0.036342\\
+D KD & 0.073143 & 0.235587 & 0.035360\\
+B lorma & 0.032393 & 0.141598 & 0.020332\\
+\bottomrule\end{tabular}
+\end{table}
+Source: saved comparison output in \code{notebooks/40_lsi.ipynb}. The exact run identifiers are:
+\par\noindent\small\code{A_full__spread4x512_3}\normalsize
+\par\noindent\small\code{C_partial__spread4x512}\normalsize
+\par\noindent\small\code{D_kd_from_A__spread4x512_3}\normalsize
+\par\noindent\small\code{B_lorma__spread4x512}\normalsize
+\subsection{Phase 6 local variants}
+\begin{table}[H]\centering\small
+\begin{tabular}{lrrr}
+\toprule Variant & BERTScore & ROUGE-1 & ROUGE-L\\\midrule
+A lora & 0.826998 & 0.301680 & 0.197140\\
+A qlora & 0.813496 & 0.278915 & 0.189584\\
+C lora & 0.765586 & 0.210960 & 0.171446\\
+B lorma & 0.762982 & 0.227685 & 0.192760\\
+\bottomrule\end{tabular}
+\end{table}
+Source: saved comparison output in \code{notebooks/50_summ.ipynb}. The exact run identifiers are:
+\par\noindent\small\code{A_lora__firstlast640_256}\normalsize
+\par\noindent\small\code{A_qlora__firstlast640_256}\normalsize
+\par\noindent\small\code{C_lora__firstlast640_256}\normalsize
+\par\noindent\small\code{B_lorma__firstlast640_256}\normalsize
+All rows use 6,678 training documents and the same 32-document evaluation subset; no KD row is present.
+\subsection{Phase 7 local variants}
+\begin{table}[H]\centering\small
+\begin{tabular}{lrrr}
+\toprule Variant & Micro-F1@7 & P@7 & R@7\\\midrule
+A full & 0.192329 & 0.209443 & 0.177801\\
+C partial & 0.081156 & 0.088378 & 0.075026\\
+B lorma & 0.072262 & 0.078692 & 0.066804\\
+\bottomrule\end{tabular}
+\end{table}
+Source: saved comparison output in \code{notebooks/60_pcr.ipynb}. The exact run identifiers are:
+\par\noindent\small\code{A_full__firstlast2x256}\normalsize
+\par\noindent\small\code{C_partial__firstlast2x256}\normalsize
+\par\noindent\small\code{B_lorma__firstlast2x256}\normalsize
+All rows use 817 training queries and 118 dev queries. The physical/effective query batch is 32 and embedding batch is 1,024; no KD row is present.

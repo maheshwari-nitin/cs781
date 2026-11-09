@@ -1,0 +1,439 @@
+\documentclass[11pt, oneside]{article}
+\usepackage[margin=1in]{geometry}
+\geometry{letterpaper}
+\usepackage{booktabs,hyperref,enumitem,float,caption,subcaption}
+\usepackage[numbers]{natbib}
+\usepackage{graphicx,amssymb,amsmath,array,longtable,xcolor,tabularx,setspace}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue,
+pdftitle={CS781 Capstone: In-House Legal Intelligence System},pdfauthor={Nitin Maheshwari}}
+\setlength{\emergencystretch}{2em}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\NA}{\textemdash}
+\newcommand{\mainbreak}{\clearpage}
+\title{CS781 Capstone Project:\\
+In-House Legal Intelligence System}
+\author{Nitin Maheshwari\\230711\\{\tt nitinm23@iitk.ac.in}\\
+Indian Institute of Technology Kanpur (IIT Kanpur)}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+I built a compact legal language modelling pipeline and adapted it to entity extraction, rhetorical roles,
+judgment prediction, statute identification, summarization and prior-case retrieval. Four foundation
+architectures fit within the 50M--300M parameter limit. A 280.8M-parameter dense decoder produced the
+best recorded submission in every phase, including 0.7935 judgment macro-F1 and 0.1855 retrieval
+micro-F1@7. This was not a matched-budget architecture comparison: its later foundation checkpoint
+had substantially more training than the alternatives. The clearest trade-offs concerned restricted
+document coverage, adapter efficiency and incomplete experimental coverage. I separate finished uploads
+from failed attempts, local metrics from competition scores, and implemented experiments from unexecuted
+tuning proposals. An implementation diagnostic also identifies padding sensitivity in the encoder path.
+\end{abstract}
+
+\section{Competition Result}
+\noindent\textbf{Codabench username:} \code{n_230711}\hfill\textbf{Roll number:} 230711
+\begin{table}[H]
+\centering\small
+\caption{Best finished submission visible in the supplied results document. Ranks are the values reported
+in that document. The count includes uploads with a displayed score; individual statuses are listed in Appendix~\ref{app:ledger}.}
+\label{tab:leaderboard}
+\begin{tabular}{clrrr}
+\toprule Phase & Task / primary metric & Score & Rank & Scored\\\midrule
+1 & LM continuation / BERTScore F1 & 0.8273 & 106 & 5\\
+2 & Legal NER / strict macro-F1 & 0.3703 & 113 & 4\\
+3 & Rhetorical roles / macro-F1 & 0.5146 & 50 & 5\\
+4 & Judgment prediction / macro-F1 & 0.7935 & 22 & 4\\
+5 & Statute identification / macro-F1 & 0.3517 & 92 & 4\\
+6 & Summarization / BERTScore F1 & 0.8153 & 119 & 4\\
+7 & Prior-case retrieval / micro-F1@7 & 0.1855 & 126 & 3\\\bottomrule
+\end{tabular}
+\end{table}
+\noindent\textbf{Public GitHub URL:} \url{https://github.com/maheshwari-nitin/cs781}
+
+\mainbreak
+\section{Introduction and Problem Description}
+The project considers a legal language system that can be hosted without sending case material to an
+external prediction service. The practical difficulty is not simply producing fluent legal text. A useful
+system must recover exact entity boundaries, distinguish a court's reasoning from quoted precedent,
+predict several applicable statutes, summarize a holding and retrieve relevant earlier cases. These tasks
+need different outputs and different error checks.
+
+The course fixes a 50M--300M foundation-model budget and requires training the foundation without loading
+pretrained language-model weights. I explored a dense decoder, an encoder--decoder, a recurrent-attention
+hybrid and a sparse-expert decoder. Later phases reuse those foundations in separate adapted models.
+The tasks follow the course benchmark derived from Indian legal text understanding and reasoning
+\cite{iltur,coursebrief}. Table~\ref{tab:tasks} states the evaluation contract.
+
+\begin{table}[H]\centering\small
+\caption{Task contracts. Every phase preserves the original document/query identifiers.}
+\label{tab:tasks}
+\begin{tabularx}{\textwidth}{clXX}
+\toprule P & Input & Required output & Main metric\\\midrule
+1 & 512-word prompt & 128-word continuation & BERTScore F1\\
+2 & Case text & Typed character spans & Strict macro-F1\\
+3 & Sentence sequence & One role per sentence & Macro-F1\\
+4 & Judgment text & Binary outcome & Macro-F1\\
+5 & Case text & Set of statute IDs & Macro-F1\\
+6 & Legal document & Generated summary & BERTScore F1\\
+7 & Query and split pool & Seven ranked case IDs & Micro-F1@7\\\bottomrule
+\end{tabularx}\end{table}
+
+The project examines how a compact legal language model can be adapted to tasks with different
+prediction requirements. I compare foundation models and adaptation methods across exact-span
+extraction, classification, generation and retrieval, with particular attention to the information
+retained from long judgments. The experiments assess whether updating the full backbone or a small
+set of adapter parameters gives the better task result, and identify failures that aggregate scores
+can hide, such as repeated summary sentences and irrelevant retrieved cases.
+
+\section{Data Analysis and Preprocessing}
+\subsection{Sources and official splits}
+The source is the official \code{Exploration-Lab/CS-781-Capstone} release. Phase 1 samples documents
+from Acts, High Courts, Supreme Court and Tribunals; the preparation recipe selects 10\% of each source
+and holds out 0.5\% of the selected documents. A separate full-data recipe preserves that holdout. These
+are source-code settings: retained per-source counts and actual consumed-token logs are unavailable.
+NER uses released folds, rhetorical roles use CL/IT train--dev files, and classification/retrieval use
+their official splits. Summarization has no public dev file, so it uses a document holdout from training.
+
+\mainbreak
+\subsection{Corpus statistics that actually informed design}
+Table~\ref{tab:data} gives counts present in executed notebook outputs. There are 100 observed statute
+IDs, 0--99, with mean unique-label counts of 3.70 in train and 3.92 in dev. Visible support counts already
+show imbalance: statute 4 occurs 341 times and statute 97 occurs 7,880 times in train. These examples are
+not asserted to be the global minimum and maximum; the full frequency table was truncated on display.
+
+\begin{table}[H]\centering\small
+\caption{Recorded dataset sizes. PCR columns are query count / candidate count; summarization's holdout
+comes from the 7,028 usable training records. Early-phase counts were not retained.}
+\label{tab:data}
+\begin{tabular}{lrrr}
+\toprule Task & Training & Dev / holdout & Test\\\midrule
+Judgment prediction & 37,387 & 1,988 & 1,517\\
+Statute identification & 42,750 & 10,181 & 13,019\\
+Summarization & 6,678 & 350 (32 scored) & 100\\
+Prior-case retrieval & 827 / 4,320 & 118 / 1,023 & 237 / 1,727\\\bottomrule
+\end{tabular}\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth,height=1.65in,keepaspectratio]{figures/length_profiles.pdf}
+\caption{Original plot of recorded word-length percentiles, not reconstructed histograms. The source
+is the data-overview output in the LSI, summarization and PCR notebooks.}
+\label{fig:lengths}\end{figure}
+
+Judgment training has 22,067 class-0 and 15,320 class-1 examples, approximately 59\%/41\%. Legal cases
+are much longer than the models' windows: retrieval training queries have median 4,508 words, and one
+candidate reaches 410,597 words. In summarization, the marginal medians are 3,129 document words and 638
+reference words. Their ratio is not the median paired compression ratio. Two records, IDs 299 and 4799,
+have missing/blank summaries and are excluded before the holdout split.
+
+\subsection{Preprocessing}
+NER retains the raw text because normalizing whitespace would move gold character offsets. Byte-level
+BPE offsets are trimmed only at a token's leading whitespace before alignment. Rhetorical roles retain
+the supplied sentence boundaries; they are not resegmented. Classification, summarization and retrieval
+may collapse whitespace before tokenization. Duplicate statute annotations are converted to sets. Empty
+retrieval text keeps its ID and receives a BOS representation rather than silently shrinking a pool.
+All loaders check identifier/schema consistency; test reference fields are not training inputs.
+
+\mainbreak
+\section{Approach and Model Evolution}
+\subsection{Phase-1 foundation model}
+I implemented four foundation families, summarized in Table~\ref{tab:architectures}. A follows a modern
+dense causal-decoder design \cite{qwen3}: grouped-query attention, per-head query/key normalization,
+rotary positions, RMS normalization and SwiGLU \cite{gqa,rope,rmsnorm,swiglu}. Each block applies attention and MLP updates through
+pre-norm residual paths. Embedding and output weights are tied. B has bidirectional encoder blocks and
+causal decoder blocks with cross-attention, following the encoder--decoder organization of T5
+\cite{t5}. C alternates three gated DeltaNet blocks with one gated attention block \cite{gdn}.
+D uses latent KV compression and shared/routed feed-forward experts, inspired by DeepSeek
+\cite{deepseek}; it also exposes an optional multi-token objective.
+
+\begin{table}[H]\centering\small
+\caption{Implemented defaults and observed parameter counts. D's base count is recovered from its
+logged 100-label classifier count after subtracting the 76,900-parameter head.}
+\label{tab:architectures}
+\begin{tabular}{clrrl}
+\toprule Model & Structure & Width & Parameters (M) & Attention / FFN\\\midrule
+A & 22 decoder blocks & 1,024 & 280.805 & 16 Q / 4 KV; FFN 2,816\\
+B & 10 encoder + 10 decoder & 1,024 & 284.483 & GQA + cross-attention\\
+C & 24 hybrid blocks & 1,024 & 291.581 & 3:1 GDN/attention; FFN 1,920\\
+D & 16 MLA--MoE blocks & 768 & 233.974 & 12 routed, 1 shared; top-2\\\bottomrule
+\end{tabular}\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{figures/pipeline.pdf}
+\caption{Implementation structure. Task models are separately adapted descendants; NER or role outputs
+are not automatically fed into the judgment, statute, summary or retrieval systems.}
+\label{fig:pipeline}\end{figure}
+
+For A, the unique-parameter calculation is explicit:
+\[
+N=32{,}000\!\times\!1{,}024+22\!\times\!11{,}274{,}368+1{,}024
+ =280{,}805{,}120.
+\]
+The code also counts unique parameter tensors so tying is not double-counted. All four implementations
+satisfy the stated parameter interval. The 32k byte-level BPE handles names and citations without an
+out-of-vocabulary replacement requirement. Decoder pretraining predicts every next token; B predicts a
+256-token continuation conditioned on a 768-token prefix. Phase-1 generation targets 128 words, using
+the archived greedy recipe with repetition penalty 1.1; the exact winning dump settings were not retained.
+
+\mainbreak
+\subsection{Transfer protocol (Phases 2--7)}
+Task models load a saved Phase-1 checkpoint and add a task head where needed. Feature extraction uses
+an explicit hidden-state method, B's encoder, or a hook immediately before the tied LM output. The hook
+avoids materializing vocabulary logits for classification and retrieval. Full adaptation trains the used
+backbone parameters; partial adaptation trains the last feature blocks and final norms. In B's classifier
+and retriever, unused decoder parameters are frozen. This saves optimizer work but does not physically
+remove the decoder from the stored model.
+
+The low-rank alternatives retain frozen base projections. In conventional column-vector notation,
+\[
+W_{\mathrm{LoRA}}=W_0+sBA,\qquad
+W_{\mathrm{LoRMA}}=(I+sBA)W_0,\qquad s=\alpha/r.
+\]
+LoRA adds an input-space low-rank update \cite{lora}; the implemented LoRMA wrapper applies an
+output-space multiplicative update, keeps the original bias separate and initializes one factor to zero
+\cite{lorma}. This describes the repository implementation, not every variant in the LoRMA paper.
+QLoRA uses NF4 frozen base projections with floating-point adapters; tied embeddings/output remain
+unquantized \cite{qlora}. Its implementation is restricted to A.
+
+\subsection{Phase 2 - Legal NER}
+NER is token classification with BIO labels for the 12 entity types. Gold character intervals are aligned
+to tokenizer offsets; predicted BIO sequences are reconstructed into exclusive-end character spans in
+the unchanged document. Overlapping windows use a deterministic owner rule: more left context for
+causal models, and more central placement for bidirectional encoders. Argmax and constrained BIO
+Viterbi decoding are implemented. An oracle reconstruction check exposes the ceiling imposed by token
+boundaries and overlapping spans. Its measured value was not retained, so I do not report one.
+
+\subsection{Phase 3 - Rhetorical role prediction}
+The role classifier pools the token interval of each supplied sentence into 13 label logits. A document
+mode supplies neighboring sentences through overlapping windows; a sentence mode is also available.
+CL and IT are trained jointly in the archived recipe and evaluated by domain as well as jointly. A long
+sentence is capped to fit inside at least one window. No document-level CRF is used. Synthetic-generation
+utilities exist in the working repository, but I confirmed that their documents were not used in training.
+
+\subsection{Phase 4 - Court judgment prediction}
+The classifier reads four 512-token chunks from the judgment's end, mean-pools tokens and chunks,
+and predicts two logits with cross-entropy. The recorded runs use a fixed 0.5 decision threshold;
+balanced training weights address the observed 59\%/41\% class split in the saved KD configuration.
+Mean, max and learned chunk attention are implemented, but the local full/LoRMA/KD rows change more
+than one factor. They are variant comparisons, not isolated tests of chunk aggregation.
+
+\mainbreak
+\subsection{Phase 5 - Legal statute identification}
+LSI reuses the document classifier with one output per observed statute. Independent sigmoids are
+necessary: mutually exclusive softmax predictions would contradict documents with several correct IDs.
+Training minimizes
+\[
+\mathcal L_{\mathrm{LSI}}=-\frac1{BK}\sum_{b,k}
+\{y_{bk}\log\sigma(z_{bk})+(1-y_{bk})\log[1-\sigma(z_{bk})]\}.
+\]
+The recorded configuration uses four spread 512-token chunks and a fixed 0.5 threshold. Optional positive
+weights and dev-calibrated global/per-label thresholds are implemented but are not credited as completed
+improvements. The label-to-column map is persisted even though the observed IDs happen to be contiguous.
+KD for D uses independent Bernoulli teacher targets rather than a categorical distribution over statutes.
+Its student is genuinely smaller in total backbone parameters than A.
+
+\subsection{Phase 6 - Abstractive summarization}
+Decoder models receive document markers, selected source tokens and the target summary; prompt labels
+are masked. B uses encoder inputs and a BOS-shifted target in its decoder. The objective is
+\[
+\mathcal L_{\mathrm{summ}}=-\sum_{t=1}^{T_y}\log p_\theta(y_t\mid x,y_{<t}),
+\]
+including the end token. The saved recipe budgets 640 source tokens, including markers, and 256 target
+tokens. Reference targets exceeding that budget are truncated before appending EOT. Inference permits
+EOT after 16 generated tokens and caps generation at 256. It does not inherit Phase 1's fixed word count.
+The recorded runs use greedy decoding without a repetition penalty or n-gram ban. A reproducible holdout
+groups duplicate normalized documents together; metrics are computed on a saved subset of 32 of the
+350 held-out documents. RoBERTa-large supplies BERTScore only, never training or teacher targets
+\cite{bertscore}. The local scorer hash is retained in the appendix.
+
+\subsection{Phase 7 - Prior Case Retrieval (PCR)}
+A shared encoder pools tokens and chunks, then L2-normalizes the document vector. Cosine similarity
+provides the ranking score. The recorded run selects first/last context totaling two 256-token chunks.
+Each training query uses up to two positives and four fixed random negatives from its training pool;
+all known positives are excluded from negatives. With positive set $P_q$ and sampled set $C_q$,
+\[
+\mathcal L_q=-\frac1{|P_q|}\sum_{p\in P_q}\log
+\frac{\exp(s(q,p)/\tau)}{\sum_{c\in C_q}\exp(s(q,c)/\tau)},\qquad\tau=0.05.
+\]
+Dev/test search uses the complete corresponding candidate pool, with no mixing across splits. Ten
+training queries have no positives and are skipped; all 118 dev and 237 test queries are retained.
+Retrieval KD and longer-training candidates are implemented but have no completed result in the supplied
+record. This distinction matters when auditing the mandatory KD requirement.
+
+\mainbreak
+\section{Experiments and Implementation Details}
+\subsection{Training protocol}
+Only free Kaggle compute was used for training. Under this constraint, I could complete the planned
+full pretraining run only for model A; the other foundations were adapted from partially pretrained
+checkpoints. This allowed me to implement and evaluate all seven task pipelines, but the resulting
+comparison reflects both architecture and pretraining progress. AdamW, gradient clipping and fixed
+random seeds were used throughout. Phase 1 uses warmup--stable--decay, while the later loops use
+warmup followed by linear decay. Appendix~\ref{app:configs} distinguishes saved settings from
+reconstructed configurations.
+
+\begin{table}[H]\centering\small
+\caption{Best-family recipes recoverable from source/output. $^*$ is an archived default, not a verified
+winning-run export. P4--P6 epoch/batch values shown in the executed last-run cells do not prove every
+earlier A run used those values. ``NR'' means not retained.}
+\label{tab:recipes}
+\begin{tabular}{cllll}
+\toprule P & Context / representation & LR & Batch / accumulation & Budget\\\midrule
+1 & 1,024-token blocks & $3\!\times\!10^{-4}$\textsuperscript{*} & calibrated / 256 seq.$^*$ & NR actual tokens\\
+2 & 1,024 / stride 768$^*$ & $5\!\times\!10^{-5}$\textsuperscript{*} & $8\!\times\!1$\textsuperscript{*} & 10 epochs$^*$\\
+3 & document / 1,024$^*$ & $5\!\times\!10^{-5}$\textsuperscript{*} & $8\!\times\!1$\textsuperscript{*} & 10 epochs$^*$\\
+4 & last $4\!\times\!512$ & $5\!\times\!10^{-5}$ & $8\!\times\!1$ (KD cell) & 2 (KD cell)\\
+5 & spread $4\!\times\!512$ & $5\!\times\!10^{-5}$ & $8\!\times\!4$ (D cell) & 1 (D cell)\\
+6 & source 640 / target 256 & $5\!\times\!10^{-5}$ & $1\!\times\!8$ & 1 (saved cell)\\
+7 & first/last $2\!\times\!256$ & $5\!\times\!10^{-5}$ & $32\!\times\!1$ & 3 epochs / 78 steps\\\bottomrule
+\end{tabular}\end{table}
+
+Classification heads use a separate archived learning rate of $10^{-3}$; the later recipes use weight
+decay 0.01 and clipping at 1.0. These settings explain the implementation without pretending that a
+notebook's final configuration is an immutable export of all preceding experiments.
+
+\subsection{Local evaluation}
+NER selects a training-document holdout; roles, judgment, LSI and PCR use official dev labels.
+Summarization uses the internal holdout described above. Local BERTScore settings are not guaranteed to
+match the competition scorer; ROUGE reports reference overlap \cite{rouge}. Checkpoints are selected
+by the task metric, not test labels. Classification thresholds and decoding options are saved for inference.
+Phase 1 supports optimizer resume; the later snapshots are inference checkpoints rather than exact
+optimizer resumes. Original Phase-1 weights remain external to the submitted code archive.
+
+\subsection{Ablations and controlled comparisons}
+The archive supports comparisons, but few single-factor ablations. A's full-data descendant versus
+shorter-trained B/C changes both architecture and training. Full versus LoRMA changes the trainable
+parameter set, sometimes pooling and budget as well. The later 30-epoch A recipe, resampled/hard-negative
+options and larger retrieval context are unexecuted proposals in this record, not evidence of a gain.
+I report those limits rather than converting planned settings into experimental findings.
+
+\mainbreak
+\section{Results}
+\begin{table}[H]\centering\small
+\caption{Best finished competition score per architecture family. The A column includes its better
+recorded variant. Dashes indicate no finished result in the supplied screenshot, not a zero score.}
+\label{tab:family}
+\begin{tabular}{clrrrr}
+\toprule P & Metric & A & B & C & D\\\midrule
+1 & BERTScore F1 & \textbf{0.8273} & 0.8016 & 0.8144 & 0.8077\\
+2 & Strict macro-F1 & \textbf{0.3703} & 0.0006 & 0.2984 & 0.2918\\
+3 & Macro-F1 & \textbf{0.5146} & 0.3410 & 0.4092 & 0.3891\\
+4 & Macro-F1 & \textbf{0.7935} & 0.5914 & \NA & \NA\\
+5 & Macro-F1 & \textbf{0.3517} & 0.0328 & 0.0951 & 0.0730\\
+6 & BERTScore F1 & \textbf{0.8153} & 0.7651 & 0.7680 & \NA\\
+7 & Micro-F1@7 & \textbf{0.1855} & 0.0549 & 0.0732 & \NA\\\bottomrule
+\end{tabular}\end{table}
+
+A is the empirical winner of this implementation, but these rows do not establish an architectural cause.
+Its later foundation checkpoint has 16,800 pretraining updates, whereas the loaded B and C checkpoints
+record 600 and 200. A's validation tail loss is 1.2521, versus B's 2.9320 and C's 2.9727. That pre-existing
+gap is a serious confound before any task-specific adaptation begins. The second A rhetorical-role
+upload improves from 0.4837 to 0.5146; the retained record does not isolate the changed setting.
+
+\begin{table}[H]\centering\small
+\caption{Local A metrics and corresponding competition score. The evaluated populations differ;
+the summarization local score uses only 32 internal holdout documents. These are not paired test estimates.}
+\label{tab:local}
+\begin{tabular}{clrrl}
+\toprule P & Variant & Local primary & Competition & Local secondary metrics\\\midrule
+4 & full A & 0.814897 & 0.7935 & NR for this row\\
+5 & full A & 0.345304 & 0.3517 & micro-F1 .492551; subset .093311\\
+6 & A LoRA & 0.826998 & 0.8153 & R1 .301680; RL .197140\\
+7 & full A & 0.192329 & 0.1855 & P@7 .209443; R@7 .177801\\\bottomrule
+\end{tabular}\end{table}
+
+The summarization comparison favors ordinary LoRA over QLoRA in this record. Both runs have
+3,198,976 trainable parameters, while local BERTScore is 0.826998 for LoRA and 0.813496 for QLoRA.
+The corresponding competition scores, 0.8153 and 0.8094, follow the same ordering. This comparison
+supports selecting LoRA for the final summary model, although the retained run settings do not
+isolate quantization as the sole cause of the difference.
+
+For PCR, A retrieves 173 relevant cases among 826 outputs, against 973 complete gold references:
+$F_1=2(173)/(826+973)=0.192329$. C retrieves 73 and B 65. This calculation verifies the full-gold
+denominator rather than truncating each gold list to seven. Additional variant metrics are
+listed in Appendix~\ref{app:localresults}.
+
+\mainbreak
+\section{Error Analysis and Discussion}
+\subsection{Phase-wise failure modes}
+B is the clearest failed attempt: its NER score is 0.0006 and it trails A on every recorded phase.
+There are three concrete issues to separate. First, B received far fewer pretraining updates. Second,
+its prefix objective supervises only 256 positions per 1,024-token window, whereas A supervises every
+next-token position. Third, downstream feature calls pass no padding mask to B's bidirectional encoder.
+Right-padding tokens can therefore affect otherwise valid token representations. These observations
+support investigating B's training and interface, not dismissing encoder--decoder models in general.
+
+A controlled implementation check uses two-layer, width-32 random models, not competition weights.
+Appending eight PAD tokens changes B's original-token features by relative L2 0.3133; A's change is
+$5.77\!\times\!10^{-8}$. This confirms padding sensitivity in that code path. It does not quantify how
+much of B's final NER failure it caused. Appendix~\ref{app:padding} gives the exact test and its limits.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth,height=1.65in,keepaspectratio]{figures/learning_curves.pdf}
+\caption{Only retained trajectories are plotted: judgment B-KD dev scores, LSI D-KD cumulative training
+loss, and retrieval C dev scores. The LSI trace is a running average, not independent minibatch losses.
+No missing A learning curve is reconstructed.}
+\label{fig:curves}\end{figure}
+
+The judgment KD trace peaks at dev macro-F1 0.6407 at step 9,000, then ends at 0.6361. Keeping the best
+checkpoint matters, but the failed competition upload prevents calling it a valid competition improvement.
+In LSI, low macro-F1 alongside higher micro-F1 points to unequal label performance; the missing full
+per-label output prevents naming all weak statutes. The fixed threshold was not validated against the
+implemented calibration alternatives.
+
+The summarization preview contains repeated sentences rather than merely low overlap. One test preview
+repeats ``He was found guilty of the charge framed against him.'' 17 times in 229 words. The settings
+use no repetition penalty and permit 256 new tokens; a high BERTScore does not remove this defect.
+PCR also exposes a concrete retrieval error: query \code{0000035468} ranks its own ID first, while the
+displayed dev row has zero hits against 15 references. Self-matching consumes a slot in this example.
+The same pattern appears in the other displayed previews and should be tested with explicit self-exclusion.
+
+\mainbreak
+\subsection{What the metrics do not measure}
+BERTScore measures similarity in an evaluator's representation, and ROUGE measures reference overlap.
+Neither guarantees that a generated holding, date or statute is legally correct. Strict NER scoring can
+reject a nearly correct entity because one character is misplaced. Conversely, a perfect schema does not
+make a prediction useful. The project needs both structural validation and task evaluation, followed by
+human legal review before any decision-making use.
+
+The retrieval cutoff also has an intrinsic coverage limit. One displayed dev query has 92 relevant cases;
+even seven correct outputs would yield recall only $7/92=0.0761$ for that query. This does not explain
+away A's low overall recall, but it shows why the complete gold-set size must remain visible. I do not
+average the seven phase scores into one number: they measure different objects under different scales.
+
+\subsection{Limitations and what I would do next}
+A is the strongest recorded model, but its representation of long cases still depends on narrow
+selected windows. The immediate retrieval follow-up is a longer training budget with refreshed negatives, dev-best selection and a named
+baseline-preserving comparison. Its planned 30 epochs could raise the 817-query, batch-32 schedule from
+78 to about 780 updates. No improved score from that proposal is reported here.
+
+For B, the next test should first pass attention masks correctly and compare pretrained models at matched
+continuation-tail loss or training budget. For generation, repeat controls and a target-length study should
+precede a larger backbone. For LSI, threshold calibration and complete per-label support/F1 should be
+logged. For PCR, excluding non-relevant self-matches is a direct implementation ablation. These are
+specific tests of the observed failures, not claims that they will necessarily improve hidden-test scores.
+
+\subsection{Surprising findings}
+Parameter efficiency did not reliably preserve task quality in this record. A's judgment LoRMA result is
+far below full adaptation, although it changes much less of the model. Summarization gives a more useful
+counterpoint: A's LoRA run uses about 1.14\% trainable parameters and remains the best recorded family.
+The contrast suggests that adaptation quality is task- and setup-dependent; the experiments do not
+support a blanket claim that low-rank updates replace full adaptation.
+
+\section{Conclusion}
+The implemented system covers all seven task interfaces with a shared set of compact foundations and
+separate task adaptations. Its most defensible result is empirical: the extensively trained dense A
+checkpoint is the strongest recorded model across the seven phases. Its main remaining limitation is restricted document coverage. B's poor results expose weaknesses in this
+particular training and feature-extraction setup, including a reproducible padding defect, rather than a
+general failure of encoder--decoder modelling.
+
+The submission also records what remains unresolved: incomplete mandatory experiment coverage,
+unretained winning-run settings in early phases, repetitive summaries, self-matches in retrieval and the
+absence of human legal evaluation. Those limits determine how much can be concluded from the scores.
+\label{main-end}
+\clearpage
+\input{llm_declaration}
+\clearpage
+\bibliographystyle{ieeetr}
+\bibliography{references}
+\clearpage
+\appendix
+\input{appendix}
+\end{document}

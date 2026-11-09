@@ -1,0 +1,14 @@
+{
+  "status": "reconstructed recipe; not a claimed exact winning-run export",
+  "source_notebooks": [
+    "60_pcr.ipynb",
+    "61_pcr_a_tuning.ipynb"
+  ],
+  "observed": "A full local run, physical/effective batch 32, embedding batch 1024 and 3-epoch source recipe are observed. The exact run artifact/config is external.",
+  "required_external": [
+    "official prepared data",
+    "original Phase-1 tokenizer and weights",
+    "task best checkpoint for inference",
+    "original run config for exact experiment reproduction"
+  ]
+}

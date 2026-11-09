@@ -1,0 +1,14 @@
+# Training/inference dependencies; historical exact versions were not fully recorded.
+# Install the CUDA-compatible torch build for your runtime; BERTScore encoder is scoring-only.
+torch>=2.5
+numpy
+tokenizers
+ijson
+huggingface_hub[hf_xet]
+pandas
+scikit-learn
+rouge-score
+bert-score
+sacrebleu
+nbformat
+# Optional: flash-linear-attention (architecture C; CUDA), bitsandbytes (QLoRA on A; CUDA)

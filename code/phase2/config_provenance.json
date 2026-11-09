@@ -1,0 +1,13 @@
+{
+  "status": "reconstructed recipe; not a claimed exact winning-run export",
+  "source_notebooks": [
+    "10_ner.ipynb"
+  ],
+  "observed": "Only the notebook default full-A recipe is available; exact winning epoch, checkpoint, decoding settings and hyperparameters are unverified.",
+  "required_external": [
+    "official prepared data",
+    "original Phase-1 tokenizer and weights",
+    "task best checkpoint for inference",
+    "original run config for exact experiment reproduction"
+  ]
+}

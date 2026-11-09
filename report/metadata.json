@@ -1,0 +1,14 @@
+{
+  "first_name": "Nitin",
+  "last_name": "Maheshwari",
+  "roll_number": "230711",
+  "email": "nitinm23@iitk.ac.in",
+  "codabench_username": "n_230711",
+  "report_freeze": "9 November 2026",
+  "public_github_url": "https://github.com/maheshwari-nitin/cs781",
+  "github_publication": "repository URL supplied by student",
+  "rank_capture_date": "not retained in supplied evidence",
+  "backbone_llm_use": "student reports own model implementation; no generated backbone in observed assistance",
+  "synthetic_rr_training_use": "not used, confirmed by student",
+  "training_compute_statement": "Only free Kaggle compute was used; only A completed planned full pretraining, confirmed by student."
+}

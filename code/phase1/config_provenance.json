@@ -1,0 +1,18 @@
+{
+  "status": "reconstructed recipe; not a claimed exact winning-run export",
+  "source_notebooks": [
+    "00_data_tokenizer.ipynb",
+    "00b_full_data.ipynb",
+    "01_train.ipynb",
+    "02_generate_submit.ipynb",
+    "03_resume.ipynb",
+    "04_decoding_sweep.ipynb"
+  ],
+  "observed": "Exact winning decoding settings, tokenizer artifact hash and consumed-token count were not retained.",
+  "required_external": [
+    "official prepared data",
+    "original Phase-1 tokenizer and weights",
+    "task best checkpoint for inference",
+    "original run config for exact experiment reproduction"
+  ]
+}

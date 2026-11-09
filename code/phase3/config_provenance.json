@@ -1,0 +1,13 @@
+{
+  "status": "reconstructed recipe; not a claimed exact winning-run export",
+  "source_notebooks": [
+    "20_rr.ipynb"
+  ],
+  "observed": "A_rr_2.zip is the best upload, but the change from A_rr.zip is not retained. This recipe is an implementation reconstruction, not the exact winner config.",
+  "required_external": [
+    "official prepared data",
+    "original Phase-1 tokenizer and weights",
+    "task best checkpoint for inference",
+    "original run config for exact experiment reproduction"
+  ]
+}

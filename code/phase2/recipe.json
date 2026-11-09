@@ -1,0 +1,23 @@
+{
+  "phase1_run": "EXTERNAL_PHASE1_RUN_REQUIRED",
+  "phase1_ckpt": "best",
+  "method": "full",
+  "method_kwargs": {},
+  "data_dir": "EXTERNAL_DATA_DIR_REQUIRED",
+  "out_dir": "runs",
+  "run_name": "A_ner_reconstructed",
+  "seed": 1337,
+  "window": 1024,
+  "stride": 768,
+  "n_val_docs": 10,
+  "batch_size": 8,
+  "epochs": 10,
+  "lr": 5e-05,
+  "head_lr": 0.001,
+  "weight_decay": 0.01,
+  "warmup_frac": 0.1,
+  "dropout": 0.1,
+  "class_weighting": "none",
+  "decode": "argmax",
+  "window_agg": "owner"
+}

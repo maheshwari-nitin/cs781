@@ -1,0 +1,42 @@
+\section*{LLM Usage Declaration}
+\noindent\textbf{Q1. Which Large Language Model(s), if any, did you use while completing the competition
+or writing this report? Give model name and vendor.}
+
+I used GPT (OpenAI) and Claude (Anthropic).
+
+\medskip\noindent\textbf{Q2. For each row, mark Yes or No and state the purpose in one short phrase.}
+\begin{table}[H]\centering\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{4.0cm}cX}
+\toprule Part & Used LLM? & Purpose of using the LLM\\\midrule
+Understanding concepts / papers & Yes & Attention, residual accumulation, normalization and adaptation explanations.\\
+Ideation / brainstorming at a high level & Yes & Pipeline organization, data checks and experimental follow-ups.\\
+Debugging small ancillary snippets & Yes & Duplicate statute annotations and blank summary handling.\\
+Plotting / visualization code & Yes & Original report plots, diagrams and evidence extraction.\\
+Grammar / writing style of the report & Yes & Drafting and revision of the report prose.\\
+Report structure / section wording & Yes & Organizing material under the supplied mandatory sections.\\
+Designing the model architecture & No & Backbone/adapter implementations reported as my own; no backbone was generated in the recorded assistance.\\
+Hyperparameter search / tuning & Yes & Longer A training recipes, candidate comparisons and automatic batch sizing, in addition to my own tuning.\\
+Analysis of results / conclusions & Yes & Assisted numerical comparisons, failure diagnosis and discussion in this report.\\
+Writing the core training / inference code & Yes & Assistance with task infrastructure, especially Phases 5--7 and retrieval batching/KD.\\
+Other (specify) & Yes & Regression tests, packaging, source documentation and LaTeX compilation.\\\bottomrule
+\end{tabularx}
+\end{table}
+\medskip\noindent\textbf{Q3. Did you refer to sources other than lecture slides and an LLM? If yes,
+list them.}
+
+Yes. Sources include the course brief/template, official dataset and the architecture/adaptation papers
+listed in the bibliography: Qwen3, T5, gated DeltaNet, DeepSeek-V3, LoRA, LoRMA and QLoRA. Metric and
+implementation references include BERTScore, ROUGE, BLEU, knowledge distillation, PyTorch
+documentation, bitsandbytes and scikit-learn.
+
+\medskip
+\noindent\textbf{Q4. Apart from any permitted LLM use, what was your contribution? In 8--12 sentences
+describe your own understanding, architecture decisions, implementation, experiments and analysis.
+Name at least two things you tried that failed and what you concluded from them.}
+
+I proposed the overall project approach and worked on the model implementations.
+I chose experimental settings and carried out hyperparameter trials.
+I ran the training and submission workflow and supplied the recorded results.
+
+\medskip
+\noindent\textbf{Code repository.} \url{https://github.com/maheshwari-nitin/cs781}
